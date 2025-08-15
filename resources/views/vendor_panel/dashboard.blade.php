@@ -66,6 +66,14 @@
     </a>
   </div>
 
+  {{-- Report Download --}}
+  <div class="mt-6">
+    <a href="{{ route('vendor.orders.report.today') }}"
+       class="inline-flex items-center gap-2 px-4 py-2 text-white shadow rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+      Download Today's Orders Report
+    </a>
+  </div>
+
   {{-- Recent Orders --}}
   <div class="mt-8 overflow-hidden border shadow-xl rounded-2xl border-white/10 bg-slate-900/60 backdrop-blur-lg">
     <div class="px-4 py-3 text-sm font-semibold border-b text-slate-200 border-white/10">Recent Orders</div>

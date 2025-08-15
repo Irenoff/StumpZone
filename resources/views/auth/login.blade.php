@@ -124,7 +124,7 @@
         <!-- Stadium seating effect -->
         <div class="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-gray-900/90 via-gray-900/30 to-transparent"></div>
         <!-- Animated particles -->
-        <div id="particles-js" class="absolute inset-0"></div>
+        <div id="particles-js" class="absolute inset-0"></div> 
     </div>
 
     <!-- Side big motivational text (left of card on desktop, above on mobile) -->
@@ -141,9 +141,12 @@
             StumpZone: The Home of Sports Equipment
         </div>
 
-        <div class="mt-4 ml-[215px] text-lg font-medium leading-relaxed text-[#a5f3fc] md:text-xl font-display p-5">
-            <span class="text-[#7dd3fc]">"Champions train, losers complain."</span><br>
-            <span class="text-[#bae6fd]">Join us and be legendary.</span>
+        <div class="mt-4 ml-[105px] text-lg font-medium leading-relaxed text-[#a5f3fc] md:text-xl font-display p-15">
+            <span class="text-[#7dd3fc]">"Champions train losers complain."</span>
+</div>
+            <div class="mt-4 ml-[150px] text-lg font-medium leading-relaxed text-[#a5f3fc] md:text-xl font-display p-15">
+                
+            <span class="text-[#bae6fd]"> Join us and be legendary.</span> 
         </div>
     </div>
 

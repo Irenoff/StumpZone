@@ -149,7 +149,7 @@
         <div class="mb-10 text-center">
             <div class="mb-4 cricket-icon">🏏</div>
             <h1 class="mb-3 text-5xl font-bold text-transparent bg-gradient-to-r from-blue-300 to-blue-100 bg-clip-text">StumpZone</h1>
-            <p class="text-xl text-blue-100">Elevate Your Cricket Experience</p>
+            <p class="text-xl text-blue-100">Elevate Your Sport Experience</p>
         </div>
         
         <!-- Features Grid -->
@@ -191,7 +191,7 @@
             <a href="{{ route('login') }}" class="inline-block px-12 py-4 mb-6 text-lg font-semibold rounded-full login-btn">
                 Enter StumpZone
             </a>
-            <p class="text-sm text-blue-100">Join our community of cricket enthusiasts</p>
+            <p class="text-sm text-blue-100">Join our community of Sport enthusiasts</p>
         </div>
     </div>
 

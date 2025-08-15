@@ -8,7 +8,7 @@
         </h1>
         
         <div class="grid grid-cols-2 gap-6 md:grid-cols-4">
-            <!-- 🏏 Cricket -->
+            <!-- � Cricket -->
             <a href="{{ route('admin.cricket.dashboard') }}" class="relative overflow-hidden transition-all duration-300 border group bg-white/5 rounded-xl border-white/10 hover:border-cyan-400 hover:shadow-lg hover:shadow-cyan-400/20">
                 <div class="flex flex-col items-center p-6">
                     <div class="flex items-center justify-center w-16 h-16 mb-4 transition-transform rounded-full shadow-lg bg-gradient-to-br from-amber-400 to-amber-600 group-hover:scale-110">
@@ -64,7 +64,7 @@
             </a>
 
             <!-- 👥 Users -->
-            <a href="{{ route('admin.users.dashboard') }}" class="relative overflow-hidden transition-all duration-300 border group bg-white/5 rounded-xl border-white/10 hover:border-blue-400 hover:shadow-lg hover:shadow-blue-400/20">
+            <a href="{{ route('admin.users.index') }}" class="relative overflow-hidden transition-all duration-300 border group bg-white/5 rounded-xl border-white/10 hover:border-blue-400 hover:shadow-lg hover:shadow-blue-400/20">
                 <div class="flex flex-col items-center p-6">
                     <div class="flex items-center justify-center w-16 h-16 mb-4 transition-transform rounded-full shadow-lg bg-gradient-to-br from-blue-400 to-blue-600 group-hover:scale-110">
                         <i class="text-2xl text-white fas fa-users"></i>
@@ -73,17 +73,18 @@
                 </div>
                 <div class="absolute inset-0 transition-opacity opacity-0 bg-gradient-to-br from-blue-400/10 to-transparent group-hover:opacity-100"></div>
             </a>
+<!-- 📦 Orders -->
+<a href="{{ route('admin.orders.index') }}"
+   class="relative overflow-hidden transition-all duration-300 border group bg-white/5 rounded-xl border-white/10 hover:border-purple-400 hover:shadow-lg hover:shadow-purple-400/20">
+  <div class="flex flex-col items-center p-6">
+      <div class="flex items-center justify-center w-16 h-16 mb-4 transition-transform rounded-full shadow-lg bg-gradient-to-br from-purple-400 to-purple-600 group-hover:scale-110">
+          <i class="text-2xl text-white fas fa-box"></i>
+      </div>
+      <span class="text-lg font-semibold text-white">Orders</span>
+  </div>
+  <div class="absolute inset-0 transition-opacity opacity-0 bg-gradient-to-br from-purple-400/10 to-transparent group-hover:opacity-100"></div>
+</a>
 
-            <!-- 📦 Orders -->
-            <a href="{{ route('admin.orders.dashboard') }}" class="relative overflow-hidden transition-all duration-300 border group bg-white/5 rounded-xl border-white/10 hover:border-purple-400 hover:shadow-lg hover:shadow-purple-400/20">
-                <div class="flex flex-col items-center p-6">
-                    <div class="flex items-center justify-center w-16 h-16 mb-4 transition-transform rounded-full shadow-lg bg-gradient-to-br from-purple-400 to-purple-600 group-hover:scale-110">
-                        <i class="text-2xl text-white fas fa-box"></i>
-                    </div>
-                    <span class="text-lg font-semibold text-white">Orders</span>
-                </div>
-                <div class="absolute inset-0 transition-opacity opacity-0 bg-gradient-to-br from-purple-400/10 to-transparent group-hover:opacity-100"></div>
-            </a>
 
             <!-- 🚚 Deliveries -->
             <a href="{{ route('admin.deliveries.dashboard') }}" class="relative overflow-hidden transition-all duration-300 border group bg-white/5 rounded-xl border-white/10 hover:border-indigo-400 hover:shadow-lg hover:shadow-indigo-400/20">
@@ -94,6 +95,17 @@
                     <span class="text-lg font-semibold text-white">Deliveries</span>
                 </div>
                 <div class="absolute inset-0 transition-opacity opacity-0 bg-gradient-to-br from-indigo-400/10 to-transparent group-hover:opacity-100"></div>
+            </a>
+
+            <!-- ✨ New Arrivals -->
+            <a href="{{ route('admin.arrivals.create') }}" class="relative overflow-hidden transition-all duration-300 border group bg-white/5 rounded-xl border-white/10 hover:border-pink-400 hover:shadow-lg hover:shadow-pink-400/20">
+                <div class="flex flex-col items-center p-6">
+                    <div class="flex items-center justify-center w-16 h-16 mb-4 transition-transform rounded-full shadow-lg bg-gradient-to-br from-pink-400 to-pink-600 group-hover:scale-110">
+                        <i class="text-2xl text-white fas fa-star"></i>
+                    </div>
+                    <span class="text-lg font-semibold text-white">New Arrivals</span>
+                </div>
+                <div class="absolute inset-0 transition-opacity opacity-0 bg-gradient-to-br from-pink-400/10 to-transparent group-hover:opacity-100"></div>
             </a>
         </div>
 

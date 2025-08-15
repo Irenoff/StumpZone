@@ -42,7 +42,7 @@
     <!-- Add Form -->
     <div id="addForm" class="hidden transition-all duration-300 ease-in-out transform">
         <div class="p-8 mb-10 border-2 border-orange-200 shadow-xl bg-gradient-to-br from-white to-orange-50 rounded-2xl">
-          <form action="{{ route('admin.badminton.store') }}" method="POST" enctype="multipart/form-data">
+         <form action="{{ route('admin.badminton.store') }}" method="POST" enctype="multipart/form-data">
 
                 @csrf
                 <h2 class="mb-6 text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-blue-600">
@@ -181,15 +181,7 @@
                         <option value="out_of_stock">Out of Stock</option>
                         <option value="pre_order">Pre-order</option>
                     </select>
-                    <select id="typeFilter" 
-                            class="px-4 py-2 border-2 border-orange-200 rounded-xl focus:ring-2 focus:ring-orange-400 focus:border-transparent">
-                        <option value="">All Types</option>
-                        <option value="rackets">Rackets</option>
-                        <option value="shuttles">Shuttles</option>
-                        <option value="shoes">Shoes</option>
-                        <option value="nets">Nets</option>
-                        <option value="accessories">Accessories</option>
-                    </select>
+                  
                 </div>
             </div>
             
@@ -242,9 +234,9 @@
                             </td>
                             <td class="px-6 py-4">
                                 <div class="flex items-center">
-                                    <img src="{{ asset('storage/' . $item->image_url) }}"
+                                    <img src="{{ asset('storage/' . $item->image_path) }}"
      class="object-cover w-12 h-12 border-2 border-orange-200 rounded-lg cursor-pointer hover:shadow-md hover:border-orange-400"
-     onclick="showImageModal('{{ asset('storage/' . $item->image_url) }}', '{{ $item->name }}')">
+     onclick="showImageModal('{{ asset('storage/' . $item->image_path) }}', '{{ $item->name }}')">
 
                                 </div>
                             </td>

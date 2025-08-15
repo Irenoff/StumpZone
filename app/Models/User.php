@@ -34,6 +34,12 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    public function review()
+{
+    return $this->hasOne(\App\Models\Review::class);
+}
+
+
     /**
      * Get the attributes that should be cast.
      *

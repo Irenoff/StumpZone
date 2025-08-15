@@ -20,7 +20,8 @@ return new class extends Migration
     $table->integer('quantity');
     $table->string('status')->nullable();
     $table->string('size')->nullable();
-    $table->string('image_url')->nullable(); // add this line
+    $table->string('image_path')->nullable();
+ // add this line
 
     $table->timestamps();
 });

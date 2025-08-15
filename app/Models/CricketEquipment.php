@@ -16,7 +16,9 @@ class CricketEquipment extends Model
     'price',
     'image_path',
     'status',
-    'quantity'
+    'quantity',
+    'size'
+     
 ];
 
 }

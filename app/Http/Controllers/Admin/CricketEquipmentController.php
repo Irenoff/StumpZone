@@ -30,13 +30,16 @@ public function index()
         'price' => 'required|numeric|min:0.01',
         'image' => 'nullable|image|max:2048',
         'status' => 'nullable|string',
+          'size' => 'nullable|string|max:20',
         'quantity' => 'nullable|integer|min:0'
     ]);
 
-    if ($request->hasFile('image')) {
-        $imagePath = $request->file('image')->store('cricket', 'public');
-        $validated['image_path'] = $imagePath;
-    }
+if ($request->hasFile('image')) {
+    $imagePath = $request->file('image')->store('equipment_images', 'public');
+    $validated['image_path'] = $imagePath;
+}
+
+
 
     CricketEquipment::create($validated);
 
@@ -66,6 +69,7 @@ public function index()
         'price' => 'required|numeric|min:0',
         'quantity' => 'required|integer|min:0',
         'status' => 'required|string',
+         'size' => 'nullable|string|max:20',
         'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
     ]);
 

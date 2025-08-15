@@ -2,113 +2,290 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\Admin\CricketEquipmentController;
-use App\Http\Controllers\Admin\FootballEquipmentController;
-use App\Http\Controllers\Admin\BoxingController;
-use App\Http\Controllers\Admin\BasketballController;
-use App\Http\Controllers\Admin\BadmintonController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\OrderController;
-use App\Http\Controllers\DeliveryController;
-use App\Http\Middleware\IsAdmin;
 
 /*
 |--------------------------------------------------------------------------
-| Web Routes
+| Middleware
 |--------------------------------------------------------------------------
 */
+use App\Http\Middleware\IsAdmin;
+use App\Http\Middleware\IsVendor;
+use App\Http\Middleware\IsDeliver;
 
-// 🌐 Public Welcome Page
-Route::get('/', function () {
-    return view('welcome');
-});
+/*
+|--------------------------------------------------------------------------
+| Controllers (shared)
+|--------------------------------------------------------------------------
+*/
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\OffersController;
+use App\Http\Controllers\ReviewsController;
+use App\Http\Controllers\Customer\SearchController;
 
-// 🔐 Redirect after login based on usertype
+/*
+|--------------------------------------------------------------------------
+| Orders/Deliveries controllers (Customer + Vendor + Deliver)
+|--------------------------------------------------------------------------
+*/
+use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
+use App\Http\Controllers\Vendor\OrderController as VendorOrderController;
+use App\Http\Controllers\Deliver\DeliveryController as DeliverDeliveryController;
+use App\Http\Controllers\Vendor\ArrivalsController as VendorArrivalsController;
+use App\Http\Controllers\Admin\ArrivalsController as AdminArrivalsController; // Admin arrivals
+
+// Vendor generic products controller (for all sports)
+use App\Http\Controllers\Vendor\ProductsController as VendorProductsController;
+
+/*
+|--------------------------------------------------------------------------
+| Public Landing Page
+|--------------------------------------------------------------------------
+*/
+Route::get('/', fn () => view('welcome'))->name('home');
+
+/*
+|--------------------------------------------------------------------------
+| Authenticated Dashboard Redirect
+|--------------------------------------------------------------------------
+*/
 Route::get('/dashboard', function () {
-    $user = Auth::user();
-    if ($user->usertype === 'admin') {
-        return redirect()->route('admin.home');
-    }
-    return view('dashboard');
+    $type = strtolower((string) (Auth::user()->usertype ?? 'user'));
+
+    return match ($type) {
+        'admin'   => redirect()->route('admin.home'),
+        'vendor'  => redirect()->route('vendor.dashboard'),
+        'deliver' => redirect()->route('deliver.delivery.dashboard'),
+        default   => redirect()->route('customer.dashboard'),
+    };
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-// 🔐 Breeze Profile Routes
-Route::middleware('auth')->group(function () {
+/*
+|--------------------------------------------------------------------------
+| Authenticated User Routes (Customer features)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth'])->group(function () {
+    // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Cart (canonical)
+    Route::get('/cart', [CartController::class, 'view'])->name('cart.view');
+    Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
+    Route::post('/cart/update/{id}', [CartController::class, 'update'])->name('cart.update');
+    Route::delete('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
+    Route::delete('/cart', [CartController::class, 'clear'])->name('cart.clear');
+
+    // Payment flow
+    Route::get('/customer/cart/payment', [CartController::class, 'paymentPage'])->name('customer.cart.payment');
+    Route::post('/checkout/pay', [CartController::class, 'pay'])->name('checkout.pay');
+
+    // Customer Orders (My Orders)
+    Route::get('/orders', [CustomerOrderController::class, 'index'])->name('customer.orders.index');
+    Route::get('/orders/{order}', [CustomerOrderController::class, 'show'])
+        ->whereNumber('order')
+        ->name('customer.orders.show');
+
+    // Customer Search
+    Route::get('/customer/search', [SearchController::class, 'search'])->name('customer.search');
 });
 
-// 🛡️ Admin Routes
-Route::middleware(['auth', IsAdmin::class])->prefix('admin')->name('admin.')->group(function () {
+/*
+|--------------------------------------------------------------------------
+| Admin Routes
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', IsAdmin::class])
+    ->prefix('admin')
+    ->as('admin.')
+    ->group(function () {
 
-    // 🏠 Admin Main Dashboard
-    Route::get('/home', function () {
-        return view('admin.main_dashboard');
-    })->name('home');
+        Route::get('/home', fn () => view('admin.main_dashboard'))->name('home');
+        Route::get('/dashboard', fn () => view('admin.main_dashboard'))->name('dashboard');
 
-    // 🏏 Cricket Equipment
-    Route::prefix('cricket')->name('cricket.')->group(function () {
-        Route::get('/dashboard', [CricketEquipmentController::class, 'index'])->name('dashboard');
-        Route::post('/store', [CricketEquipmentController::class, 'store'])->name('store');
-        Route::get('/{id}/edit', [CricketEquipmentController::class, 'edit'])->name('edit');
-        Route::put('/{id}', [CricketEquipmentController::class, 'update'])->name('update');
-        Route::delete('/{id}', [CricketEquipmentController::class, 'destroy'])->name('destroy');
+        // Admin • Arrivals (own pages & names)
+        Route::prefix('arrivals')->name('arrivals.')->group(function () {
+            // If your dashboard uses a "Create" button, land it on index (with add form)
+            Route::get('/create', fn () => redirect()->route('admin.arrivals.index'))->name('create');
+
+            Route::get('/',                [AdminArrivalsController::class, 'index'])->name('index');
+            Route::post('/',               [AdminArrivalsController::class, 'store'])->name('store');
+            Route::get('/{arrival}/edit',  [AdminArrivalsController::class, 'edit'])->name('edit');
+            Route::put('/{arrival}',       [AdminArrivalsController::class, 'update'])->name('update');
+            Route::delete('/{arrival}',    [AdminArrivalsController::class, 'destroy'])->name('destroy');
+            Route::delete('/bulk-destroy', [AdminArrivalsController::class, 'bulkDestroy'])->name('bulk-destroy');
+        });
+
+        // Cricket
+        Route::prefix('cricket')->name('cricket.')->group(function () {
+            Route::get('/dashboard', [\App\Http\Controllers\Admin\CricketEquipmentController::class, 'index'])->name('dashboard');
+            Route::post('/store',    [\App\Http\Controllers\Admin\CricketEquipmentController::class, 'store'])->name('store');
+            Route::get('/{id}/edit', [\App\Http\Controllers\Admin\CricketEquipmentController::class, 'edit'])->name('edit');
+            Route::put('/{id}',      [\App\Http\Controllers\Admin\CricketEquipmentController::class, 'update'])->name('update');
+            Route::delete('/{id}',   [\App\Http\Controllers\Admin\CricketEquipmentController::class, 'destroy'])->name('destroy');
+        });
+
+        // Football
+        Route::prefix('football')->name('football.')->group(function () {
+            Route::get('/dashboard', [\App\Http\Controllers\Admin\FootballEquipmentController::class, 'index'])->name('dashboard');
+            Route::post('/store',    [\App\Http\Controllers\Admin\FootballEquipmentController::class, 'store'])->name('store');
+            Route::get('/{id}/edit', [\App\Http\Controllers\Admin\FootballEquipmentController::class, 'edit'])->name('edit');
+            Route::put('/{id}',      [\App\Http\Controllers\Admin\FootballEquipmentController::class, 'update'])->name('update');
+            Route::delete('/{id}',   [\App\Http\Controllers\Admin\FootballEquipmentController::class, 'destroy'])->name('destroy');
+        });
+
+        // Boxing
+        Route::prefix('boxing')->name('boxing.')->group(function () {
+            Route::get('/dashboard',       [\App\Http\Controllers\Admin\BoxingController::class, 'dashboard'])->name('dashboard');
+            Route::post('/',               [\App\Http\Controllers\Admin\BoxingController::class, 'store'])->name('store');
+            Route::get('/{boxing}/edit',   [\App\Http\Controllers\Admin\BoxingController::class, 'edit'])->name('edit');
+            Route::put('/{boxing}',        [\App\Http\Controllers\Admin\BoxingController::class, 'update'])->name('update');
+            Route::delete('/{boxing}',     [\App\Http\Controllers\Admin\BoxingController::class, 'destroy'])->name('destroy');
+        });
+
+        // Basketball
+        Route::prefix('basketball')->name('basketball.')->group(function () {
+            Route::get('/dashboard', [\App\Http\Controllers\Admin\BasketballController::class, 'index'])->name('dashboard');
+            Route::post('/store',    [\App\Http\Controllers\Admin\BasketballController::class, 'store'])->name('store');
+            Route::get('/{id}/edit', [\App\Http\Controllers\Admin\BasketballController::class, 'edit'])->name('edit');
+            Route::put('/{id}',      [\App\Http\Controllers\Admin\BasketballController::class, 'update'])->name('update');
+            Route::delete('/{id}',   [\App\Http\Controllers\Admin\BasketballController::class, 'destroy'])->name('destroy');
+        });
+
+        // Badminton
+        Route::prefix('badminton')->name('badminton.')->group(function () {
+            Route::get('/dashboard',      [\App\Http\Controllers\Admin\BadmintonController::class, 'dashboard'])->name('dashboard');
+            Route::post('/store',         [\App\Http\Controllers\Admin\BadmintonController::class, 'store'])->name('store');
+            Route::get('/edit/{id}',      [\App\Http\Controllers\Admin\BadmintonController::class, 'edit'])->name('edit');
+            Route::put('/update/{id}',    [\App\Http\Controllers\Admin\BadmintonController::class, 'update'])->name('update');
+            Route::delete('/delete/{id}', [\App\Http\Controllers\Admin\BadmintonController::class, 'destroy'])->name('destroy');
+        });
+
+        // Users (admin manages users)
+        Route::prefix('users')->name('users.')->group(function () {
+            Route::get('/',        [UserController::class, 'index'])->name('index');
+            Route::post('/store',  [UserController::class, 'store'])->name('store');
+            Route::delete('/{id}', [UserController::class, 'destroy'])->name('destroy');
+        });
+
+        // Keep admin dashboard links alive
+        Route::prefix('orders')->name('orders.')->group(function () {
+            Route::get('/dashboard', fn () => redirect()->route('admin.dashboard'))->name('dashboard');
+            Route::get('/',         fn () => redirect()->route('admin.dashboard'))->name('index');
+        });
+        Route::prefix('deliveries')->name('deliveries.')->group(function () {
+            Route::get('/dashboard', fn () => redirect()->route('admin.dashboard'))->name('dashboard');
+            Route::get('/',         fn () => redirect()->route('admin.dashboard'))->name('index');
+        });
     });
 
-    // ⚽ Football Equipment
-    Route::prefix('football')->name('football.')->group(function () {
-        Route::get('/dashboard', [FootballEquipmentController::class, 'index'])->name('dashboard');
-        Route::post('/store', [FootballEquipmentController::class, 'store'])->name('store');
-        Route::get('/{id}/edit', [FootballEquipmentController::class, 'edit'])->name('edit');
-        Route::put('/{id}', [FootballEquipmentController::class, 'update'])->name('update');
-        Route::delete('/{id}', [FootballEquipmentController::class, 'destroy'])->name('destroy');
+/*
+|--------------------------------------------------------------------------
+| Vendor Panel Routes
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', IsVendor::class])
+    ->prefix('vendor')
+    ->as('vendor.')
+    ->group(function () {
+        // Vendor dashboard
+        Route::get('/dashboard', [\App\Http\Controllers\Vendor\DashboardController::class, 'index'])->name('dashboard');
+
+        // Vendor Orders
+        Route::get('/orders', [VendorOrderController::class, 'index'])->name('orders.index');
+        Route::get('/orders/{order}', [VendorOrderController::class, 'show'])
+            ->whereNumber('order')
+            ->name('orders.show');
+        Route::post('/orders/{order}/confirm', [VendorOrderController::class, 'confirm'])
+            ->whereNumber('order')
+            ->name('orders.confirm');
+
+        // Vendor: Products hub + per-sport CRUD (generic controller)
+        Route::get('/products', [VendorProductsController::class, 'home'])->name('products.home');
+        Route::prefix('products/{sport}')->group(function () {
+            Route::get('/',          [VendorProductsController::class, 'index'])->name('products.index');     // list
+            Route::post('/',         [VendorProductsController::class, 'store'])->name('products.store');     // create
+            Route::get('/{id}/edit', [VendorProductsController::class, 'edit'])->name('products.edit');       // edit form
+            Route::put('/{id}',      [VendorProductsController::class, 'update'])->name('products.update');   // update
+            Route::delete('/{id}',   [VendorProductsController::class, 'destroy'])->name('products.destroy'); // delete
+        });
+
+        // Vendor: Arrivals CRUD + BULK DESTROY
+        Route::prefix('arrivals')->name('arrivals.')->group(function () {
+            Route::get('/',               [VendorArrivalsController::class, 'index'])->name('index');
+            Route::post('/',              [VendorArrivalsController::class, 'store'])->name('store');
+            Route::get('/{arrival}/edit', [VendorArrivalsController::class, 'edit'])->name('edit');
+            Route::put('/{arrival}',      [VendorArrivalsController::class, 'update'])->name('update');
+            Route::delete('/{arrival}',   [VendorArrivalsController::class, 'destroy'])->name('destroy');
+            Route::delete('/bulk-destroy',[VendorArrivalsController::class, 'bulkDestroy'])->name('bulk-destroy');
+        });
+
+        // Vendor: read-only reviews list
+        Route::get('/reviews', [\App\Http\Controllers\Vendor\ReviewsController::class, 'index'])->name('reviews.index');
     });
 
-    // 🥊 Boxing Equipment
-    Route::prefix('boxing')->name('boxing.')->group(function () {
-        Route::get('/dashboard', [BoxingController::class, 'dashboard'])->name('dashboard');
-        Route::post('/', [BoxingController::class, 'store'])->name('store');
-        Route::get('/{boxing}/edit', [BoxingController::class, 'edit'])->name('edit');
-        Route::put('/{boxing}', [BoxingController::class, 'update'])->name('update');
-        Route::delete('/{boxing}', [BoxingController::class, 'destroy'])->name('destroy');
+/*
+|--------------------------------------------------------------------------
+| Deliver Panel Routes
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', IsDeliver::class]) // fixed: removed stray comma from 'auth,'
+    ->prefix('deliver')
+    ->as('deliver.')
+    ->group(function () {
+        // Dashboard
+        Route::get('/deliveries', [DeliverDeliveryController::class, 'index'])
+            ->name('delivery.dashboard');
+
+        // Actions
+        Route::post('/deliveries/{delivery}/done',   [DeliverDeliveryController::class, 'delivered'])
+            ->whereNumber('delivery')->name('deliveries.delivered');
+
+        Route::post('/deliveries/{delivery}/cancel', [DeliverDeliveryController::class, 'cancelled'])
+            ->whereNumber('delivery')->name('deliveries.cancelled');
     });
 
-    // 🏀 Basketball Equipment
-    Route::prefix('basketball')->name('basketball.')->group(function () {
-        Route::get('/dashboard', [BasketballController::class, 'index'])->name('dashboard');
-        Route::post('/store', [BasketballController::class, 'store'])->name('store');
-        Route::get('/{id}/edit', [BasketballController::class, 'edit'])->name('edit');
-        Route::put('/{id}', [BasketballController::class, 'update'])->name('update');
-        Route::delete('/{id}', [BasketballController::class, 'destroy'])->name('destroy');
-    });
+/*
+|--------------------------------------------------------------------------
+| Customer Shop Pages (public)
+|--------------------------------------------------------------------------
+*/
+Route::get('/shop', [UserController::class, 'customerDashboard'])->name('customer.dashboard');
+Route::get('/shop/sport/cricket',    [UserController::class, 'cricket'])->name('customer.cricket');
+Route::get('/shop/sport/football',   [UserController::class, 'football'])->name('customer.football');
+Route::get('/shop/sport/badminton',  [UserController::class, 'badminton'])->name('customer.badminton');
+Route::get('/shop/sport/basketball', [UserController::class, 'basketball'])->name('customer.basketball');
+Route::get('/shop/sport/boxing',     [UserController::class, 'boxing'])->name('customer.boxing');
 
-    // 🏸 Badminton Equipment
-    Route::prefix('badminton')->name('badminton.')->group(function () {
-        Route::get('/dashboard', [BadmintonController::class, 'dashboard'])->name('dashboard');
-        Route::post('/store', [BadmintonController::class, 'store'])->name('store');
-        Route::get('/edit/{id}', [BadmintonController::class, 'edit'])->name('edit');
-        Route::put('/update/{id}', [BadmintonController::class, 'update'])->name('update');
-        Route::delete('/delete/{id}', [BadmintonController::class, 'destroy'])->name('destroy');
-    });
+// Public New Arrivals page (customer)
+Route::get('/shop/arrivals', [\App\Http\Controllers\Customer\ArrivalsController::class, 'index'])
+    ->name('customer.arrivals');
 
-    // 👥 Users Management
-    Route::prefix('users')->name('users.')->group(function () {
-        Route::get('/dashboard', [UserController::class, 'index'])->name('dashboard');
-        Route::post('/store', [UserController::class, 'store'])->name('store');
-        Route::delete('/{id}', [UserController::class, 'destroy'])->name('destroy');
-    });
+// Keep this route but redirect it to the canonical cart
+Route::get('/shop/cart', fn () => redirect()->route('cart.view'))->name('customer.cart');
 
-    // 📦 Orders
-    Route::prefix('orders')->name('orders.')->group(function () {
-        Route::get('/dashboard', [OrderController::class, 'index'])->name('dashboard');
-    });
-
-    // 🚚 Deliveries
-    Route::prefix('deliveries')->name('deliveries.')->group(function () {
-        Route::get('/dashboard', [DeliveryController::class, 'index'])->name('dashboard');
-    });
+/*
+|--------------------------------------------------------------------------
+| Reviews (public index + auth submit)
+|--------------------------------------------------------------------------
+*/
+Route::get('/reviews', [ReviewsController::class, 'index'])->name('customer.reviews');
+Route::middleware(['auth'])->group(function () {
+    Route::post('/reviews', [ReviewsController::class, 'store'])->name('customer.reviews.store');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Public Customer Pages (static)
+|--------------------------------------------------------------------------
+*/
+Route::get('/offers',    [OffersController::class, 'index'])->name('customer.offers');
+Route::view('/about',     'customer.pages.about')->name('customer.about');
+Route::view('/contact',   'customer.pages.contact')->name('customer.contact');
+Route::view('/delivery',  'customer.pages.delivery')->name('customer.delivery');
+Route::view('/branches',  'customer.pages.branches')->name('customer.branches');
 
 require __DIR__.'/auth.php';

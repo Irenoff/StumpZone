@@ -17,44 +17,28 @@ class BadmintonController extends Controller
     }
 
     // ✅ Store new equipment
-    public function store(Request $request)
+   public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:100',
-            'type' => 'required|string',
-            'price' => 'required|numeric|min:0.01',
-            'description' => 'required|string|max:500',
-            'quantity' => 'required|integer|min:0',
-            'status' => 'required|string',
-            'size' => 'nullable|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'name'        => 'required|string|max:255',
+    'description' => 'required|string',
+    'price'       => 'required|numeric|min:0.01',
+    'quantity'    => 'required|integer|min:0',
+    'status'      => 'nullable|string',
+    'size' => 'nullable|string|max:20',
+    'image'       => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
-        $imagePath = $request->file('image') 
-            ? $request->file('image')->store('badminton', 'public') 
-            : null;
+        if ($request->hasFile('image')) {
+            $validated['image_path'] = $request->file('image')->store('badminton', 'public');
 
-        BadmintonEquipment::create([
-            'name' => $validated['name'],
-            'type' => $validated['type'],
-            'price' => $validated['price'],
-            'description' => $validated['description'],
-            'quantity' => $validated['quantity'],
-            'status' => $validated['status'],
-            'size' => $validated['size'],
-            'image_url' => $imagePath,
-        ]);
+        }
 
-        return redirect()->route('admin.badminton.dashboard')
-                         ->with('success', 'Item added successfully');
+        BadmintonEquipment::create($validated);
+
+        return redirect()->back()->with('success', 'Badminton equipment added successfully!');
     }
 
-    // ✅ Show edit form
-    public function edit($id)
-    {
-        $item = BadmintonEquipment::findOrFail($id);
-        return view('admin.badminton.edit', compact('item'));
-    }
 
     // ✅ Update equipment
     public function update(Request $request, $id)
@@ -63,33 +47,35 @@ class BadmintonController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:100',
-            'type' => 'required|string',
             'price' => 'required|numeric|min:0.01',
             'description' => 'required|string|max:500',
             'quantity' => 'required|integer|min:0',
             'status' => 'required|string',
-            'size' => 'nullable|string',
+            'size' => 'nullable|string|max:20', // ✅ ADD THIS
+
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         // Handle image replacement
-        $imagePath = $item->image_url;
-        if ($request->hasFile('image')) {
-            if ($item->image_url) {
-                Storage::disk('public')->delete($item->image_url);
-            }
-            $imagePath = $request->file('image')->store('badminton', 'public');
-        }
+    $imagePath = $item->image_path;
+if ($request->hasFile('image')) {
+    if ($item->image_path) {
+        Storage::disk('public')->delete($item->image_path);
+    }
+    $imagePath = $request->file('image')->store('badminton', 'public');
+}
+
 
         $item->update([
             'name' => $validated['name'],
-            'type' => $validated['type'],
+            
             'price' => $validated['price'],
             'description' => $validated['description'],
             'quantity' => $validated['quantity'],
             'status' => $validated['status'],
             'size' => $validated['size'],
-            'image_url' => $imagePath,
+            'image_path' => $imagePath, // ✅ CORRECT
+
         ]);
 
         return redirect()->route('admin.badminton.dashboard')
@@ -110,4 +96,11 @@ class BadmintonController extends Controller
         return redirect()->route('admin.badminton.dashboard')
                          ->with('success', 'Item deleted successfully');
     }
+
+    public function edit($id)
+{
+    $item = BadmintonEquipment::findOrFail($id);
+    return view('admin.badminton.edit', compact('item'));
+}
+
 }

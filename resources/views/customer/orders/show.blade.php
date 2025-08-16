@@ -3,15 +3,19 @@
 
 @section('content')
 @php
-  // prefer controller-provided $items; fall back to relation if needed
-  $lineItems = isset($items) ? $items : ($order->items ?? collect());
-  $itemsTotal = $itemsTotal ?? ($lineItems ? $lineItems->sum(fn($i) => (float)($i->line_total ?? (($i->quantity ?? 0) * ($i->unit_price ?? 0)))) : 0);
+  // always pull from relation if $items is not explicitly passed
+  $lineItems = $items ?? ($order->items ?? collect());
 
-  // normalize statuses
+  $itemsTotal = $itemsTotal 
+    ?? ($lineItems->sum(function ($i) {
+          $qty  = (int) ($i->quantity ?? 0);
+          $unit = (float) ($i->unit_price ?? $i->price ?? 0);
+          return (float) ($i->line_total ?? $i->subtotal ?? ($qty * $unit));
+       }));
+
   $orderStatus    = $order->status ?? 'processing';
   $deliveryStatus = $deliveryStatus ?? ($order->delivery->status ?? null);
 
-  // badge palettes
   $badge = function ($status) {
       $s = strtolower((string)$status);
       return match ($s) {
@@ -66,7 +70,7 @@
           <tbody class="divide-y divide-white/10">
             @forelse($lineItems as $it)
               @php
-                $name  = $it->name ?? ('Item #'.$it->item_id);
+                $name  = $it->name ?? ('Item #'.$it->id ?? $it->item_id);
                 $sport = $it->display_sport ?? ($it->sport_type ?? '—');
                 $qty   = (int) ($it->quantity ?? 0);
                 $unit  = (float) ($it->unit_price ?? $it->price ?? 0);
@@ -90,7 +94,7 @@
         <div class="w-full max-w-sm p-4 border rounded-xl bg-white/5 border-white/10">
           <div class="flex justify-between text-sm text-gray-300">
             <span>Items Total</span>
-            <span>Rs. {{ number_format($itemsTotal ?? ($order->items_total ?? 0), 2) }}</span>
+            <span>Rs. {{ number_format($itemsTotal ?? 0, 2) }}</span>
           </div>
           <div class="flex justify-between mt-2 text-sm text-gray-300">
             <span>Delivery ({{ ucfirst($order->delivery_method ?? 'standard') }})</span>
@@ -101,8 +105,7 @@
             <span>
               Rs. {{
                 number_format(
-                  $order->grand_total
-                    ?? (($itemsTotal ?? ($order->items_total ?? 0)) + ($order->delivery_fee ?? 0)),
+                  ($itemsTotal ?? 0) + ($order->delivery_fee ?? 0),
                   2
                 )
               }}
@@ -143,7 +146,7 @@
 
       {{-- Placed --}}
       <div class="p-4 border rounded-xl bg-white/5 border-white/10">
-        <h2 class="mb-3 text-lg font-semibold text-white">Placed</h2>
+        <h2 class="mb-3 text-lg font-semibold text-white">Placed</h2> 
         <div class="text-sm text-gray-300">
           {{ $order->created_at?->format('M d, Y H:i') }}
         </div>

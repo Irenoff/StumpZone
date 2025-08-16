@@ -358,7 +358,7 @@ class CartController extends Controller
                 DB::rollBack();
                 return redirect()
                     ->route('customer.cart.payment', ['selected' => $selected])
-                    ->with('error', 'Insufficient amount. Please enter an amount equal to or greater than the total.')
+                    ->with('error', 'Insufficient amount.Please try again wih a valid account.')
                     ->with('quantities_override', $qtyInput)
                     ->withInput($request->only('amount', 'delivery_method', 'delivery_fee'));
             }

@@ -861,7 +861,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <div class="testimonial-card">
             <p class="testimonial-text">The cricket bat I purchased from StumpZone transformed my game. The balance and power are unlike anything I've experienced before. Truly professional-grade equipment.</p>
             <div class="testimonial-author">
-                <img src="{{ asset('images/testimonials/athlete1-dark.jpg') }}" alt="Rahul Sharma" class="author-avatar">
+                <img src="{{ asset('build\assets\download.jpg') }}" alt="Rahul Sharma" class="author-avatar">
                 <div class="author-info">
                     <h4>Rahul Sharma</h4>
                     <p>State Level Cricketer</p>
@@ -873,7 +873,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <div class="testimonial-card">
             <p class="testimonial-text">As a professional football coach, I recommend StumpZone gear to all my players. The quality and durability are exceptional, and their customer service is outstanding.</p>
             <div class="testimonial-author">
-                <img src="{{ asset('images/testimonials/athlete2-dark.jpg') }}" alt="Priya Patel" class="author-avatar">
+                <img src="{{ asset('build\assets\OIP.jpg') }}" alt="Priya Patel" class="author-avatar">
                 <div class="author-info">
                     <h4>Priya Patel</h4>
                     <p>Football Coach</p>
@@ -885,7 +885,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <div class="testimonial-card">
             <p class="testimonial-text">I've tried many badminton rackets over the years, but none compare to the precision and control of StumpZone's Carbon Pro series. Worth every rupee for serious players.</p>
             <div class="testimonial-author">
-                <img src="{{ asset('images/testimonials/athlete3-dark.jpg') }}" alt="Arjun Mehta" class="author-avatar">
+                <img src="{{ asset('build\assets\OIP (1).jpg') }}" alt="Arjun Mehta" class="author-avatar">
                 <div class="author-info">
                     <h4>Arjun Mehta</h4>
                     <p>National Level Player</p>

@@ -71,7 +71,7 @@ class OrderController extends Controller
 
                         // Backfill for legacy rows if needed
                         if (is_null($i->unit_price) && isset($row->price)) {
-                            $i->unit_price = (float) $row->price;
+                            $i->unit_price = (float) $row->price; 
                         }
                         if (is_null($i->name) && !empty($row->name)) {
                             $i->name = $row->name;
